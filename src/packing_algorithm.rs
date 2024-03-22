@@ -17,19 +17,16 @@ bins. (first bin is first nested list, second is the second, etc.)
   use bin_packer_3d::item::Item;
   use bin_packer_3d::packing_algorithm::packing_algorithm;
 
-  let deck = Item::new("deck", [2.0, 8.0, 12.0]);
-  let die = Item::new("die", [8.0, 8.0, 8.0]);
+  let deck = Item::new(&42, [2, 8, 12]);
+  let die = Item::new(&13, [8, 8, 8]);
   let items = vec![deck.clone(), deck.clone(), die, deck.clone(), deck];
 
-  let packed_items = packing_algorithm(Bin::new([8.0, 8.0, 12.0]), &items);
-  assert_eq!(packed_items, Ok(vec![vec!["deck", "deck", "deck", "deck"], vec!["die"]]));
+  let packed_items = packing_algorithm(Bin::new([8, 8, 12]), &items);
+  assert_eq!(packed_items, Ok(vec![vec![&42, &42, &42, &42], vec![&13]]));
 ```
 **/
 
-pub fn packing_algorithm<'a>(
-    bin: Bin<'a>,
-    items: &[Item<'a>],
-) -> Result<Vec<Vec<&'a ItemId>>> {
+pub fn packing_algorithm<'a>(bin: Bin<'a>, items: &[Item<'a>]) -> Result<Vec<Vec<&'a ItemId>>> {
     if !items.iter().all(|item| bin.fits(item)) {
         return Err(Error::AllItemsMustFit(format!(
             "All items must fit within the bin dimensions."

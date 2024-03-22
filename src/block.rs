@@ -1,24 +1,23 @@
-use crate::block::BestFitKind::{DoubledFit, ExactFit, GreaterThanFit};
 use std::cmp::Ordering::Equal;
 
 // TODO: explore using a fixed-decimal type. (eg: u16 for the integer, and u8 for the two decmial
 // places)
 
-pub type Dimension = f64;
-type Volume = f64;
+pub type Dimension = i64;
+type Volume = i64;
 
 /// Represents the kinds of fits we support in the best-fit section of our algorithm.
 /// usize contains the index of the dim where the best-fit has been matched.
 
 enum BestFitKind {
     /// When the side of the container is more than twice the length of the item's matching side.
-    DoubledFit(usize),
+    Doubled(usize),
 
     /// When the item's side fits perfects across the length of our container.
-    ExactFit(usize),
+    Exact(usize),
 
     /// When the side of the container is longer than the length of the item's matching side.
-    GreaterThanFit(usize),
+    GreaterThan(usize),
 }
 
 /// Represents a 3-dimensional cuboid.
@@ -31,10 +30,6 @@ pub struct Block {
 
 impl Block {
     pub fn new<F: Into<Dimension>>(d1: F, d2: F, d3: F) -> Self {
-        if 100 > i32::MAX {
-            println!("ok!");
-        }
-        // TODO: fail on negative values
         let mut dims = [d1.into(), d2.into(), d3.into()];
         dims.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
         Self { dims }
@@ -45,7 +40,6 @@ impl Block {
     }
 
     /// Returns a boolean regarding whether or not an item will fit into the block.
-
     pub fn does_it_fit(&self, other: &Block) -> bool {
         self.dims
             .iter()
@@ -77,14 +71,14 @@ impl Block {
     /// ```
     **/
     pub fn best_fit(mut self, item: &Block) -> Option<Vec<Block>> {
-        if !self.does_it_fit(&item) {
+        if !self.does_it_fit(item) {
             return None;
         }
 
         let mut blocks = vec![];
 
         let side_1 = match self._get_best_fit(item) {
-            DoubledFit(i) => {
+            BestFitKind::Doubled(i) => {
                 // choose the shortest side of the container we can stack the item twice on its
                 // longest side based on theory of if b_dim / 2 >= s_dim, don't open a new block (or
                 // don't rotate the item).
@@ -102,13 +96,13 @@ impl Block {
                 blocks.push(block_1);
                 i
             }
-            ExactFit(i) => {
+            BestFitKind::Exact(i) => {
                 // If the item's longest side fits perfects across the length of our container, then
                 // use that side instead:
 
                 i
             }
-            GreaterThanFit(i) => {
+            BestFitKind::GreaterThan(i) => {
                 // If we can't do either of the above, then choose the shortest side of the
                 // container where we can stack the longest side of the item: i = sides.find {
                 // |side| dims[side] >= item.dims[2] }
@@ -130,22 +124,12 @@ impl Block {
             self.dims[side_2],
             self.dims[side_3] - item.dims[0],
         );
-        let block_3a = Block::new(
-            self.dims[side_1],
-            self.dims[side_2] - item.dims[1],
-            item.dims[0],
-        );
 
         // option two for remaining blocks
         let block_2b = Block::new(
             self.dims[side_1],
             self.dims[side_2] - item.dims[1],
             self.dims[side_3],
-        );
-        let block_3b = Block::new(
-            self.dims[side_1],
-            self.dims[side_3] - item.dims[0],
-            item.dims[1],
         );
 
         // select the option where block_2 and block_3 are closest in size
@@ -155,9 +139,19 @@ impl Block {
 
         if block_2a.volume() < block_2b.volume() {
             blocks.push(block_2a);
+            let block_3a = Block::new(
+                self.dims[side_1],
+                self.dims[side_2] - item.dims[1],
+                item.dims[0],
+            );
             blocks.push(block_3a);
         } else {
             blocks.push(block_2b);
+            let block_3b = Block::new(
+                self.dims[side_1],
+                self.dims[side_3] - item.dims[0],
+                item.dims[1],
+            );
             blocks.push(block_3b);
         }
 
@@ -196,14 +190,13 @@ impl Block {
 
     fn _get_best_fit(&self, item: &Block) -> BestFitKind {
         let doubled_fit_side = self.dims.iter().enumerate().find_map(|(i, side)| {
-            if side >= &(item.dims[2] * 2_f64) {
+            if side >= &(item.dims[2] * 2) {
                 Some(i)
             } else {
                 None
             }
         });
         let exact_fit_side = self.dims.iter().enumerate().find_map(|(i, dim)| {
-
             // consider comparing these within some error: `(dim - &item.dims[2]).abs() < error`
 
             if dim == &item.dims[2] {
@@ -214,13 +207,13 @@ impl Block {
         });
 
         match (doubled_fit_side, exact_fit_side) {
-            (Some(i), None) => DoubledFit(i),
-            (None, Some(i)) => ExactFit(i),
+            (Some(i), None) => BestFitKind::Doubled(i),
+            (None, Some(i)) => BestFitKind::Exact(i),
             (Some(doubled_i), Some(exact_i)) => {
                 if doubled_i <= exact_i {
-                    DoubledFit(doubled_i)
+                    BestFitKind::Doubled(doubled_i)
                 } else {
-                    ExactFit(exact_i)
+                    BestFitKind::Exact(exact_i)
                 }
             }
             (None, None) => {
@@ -230,7 +223,7 @@ impl Block {
                     .enumerate()
                     .find_map(|(i, dim)| if dim >= &item.dims[2] { Some(i) } else { None })
                     .expect("Invariant violated: item must fit within the container!");
-                GreaterThanFit(i)
+                BestFitKind::GreaterThan(i)
             }
         }
     }

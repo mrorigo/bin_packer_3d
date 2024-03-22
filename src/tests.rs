@@ -14,7 +14,7 @@ mod block {
 
     #[test]
     fn test_item_creation() -> Result<()> {
-        Item::new("asdf", [1, 2, 3]);
+        Item::new(&1, [1, 2, 3]);
         Ok(())
     }
 
@@ -41,8 +41,8 @@ mod block {
     #[test]
     fn test_block_does_it_fit() -> Result<()> {
         // test that when an item fits, it returns true
-        let item = Block::new(3.5, 14.0, 12.7);
-        let container = Block::new(4 as Dimension, 22 as Dimension, 14 as Dimension);
+        let item = Block::new(35, 140, 127);
+        let container = Block::new(40 as Dimension, 220 as Dimension, 140 as Dimension);
         assert!(container.does_it_fit(&item));
         Ok(())
     }
@@ -99,14 +99,14 @@ mod block {
     fn test_best_fit_first_fit_greater_than() -> Result<()> {
         // test that the "greater than" match clause of the first fit returns the
         // correct remaining space.
-        let item = Block::new(1.25, 7.0, 10.0);
-        let container = Block::new(3.5, 9.5, 12.5);
+        let item = Block::new(125, 700, 1000);
+        let container = Block::new(350, 950, 1250);
         assert_eq!(
             container.best_fit(&item),
             Some(vec![
-                Block::new(1.25, 2.5, 7.0),
-                Block::new(2.5, 3.5, 12.5),
-                Block::new(2.25, 7.0, 12.5)
+                Block::new(125, 250, 700),
+                Block::new(250, 350, 1250),
+                Block::new(225, 700, 1250)
             ])
         );
         Ok(())

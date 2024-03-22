@@ -5,9 +5,7 @@
     missing_docs,
     missing_doc_code_examples
 )]
-
 // To use the `unsafe` keyword, change to `#![allow(unsafe_code)]` (do not remove); aids auditing.
-
 #![forbid(unsafe_code)]
 
 /*!
@@ -32,12 +30,12 @@ strategy, along with rotational optimizations.
     use bin_packer_3d::item::Item;
     use bin_packer_3d::packing_algorithm::packing_algorithm;
 
-    let deck = Item::new("deck", [2, 8, 12]);
-    let die = Item::new("die", [8, 8, 8]);
+    let deck = Item::new(&42, [2, 8, 12]);
+    let die = Item::new(&13, [8, 8, 8]);
     let items = vec![deck, deck, die, deck, deck];
 
     let packed_items = packing_algorithm(Bin::new([8, 8, 12]), &items);
-    assert_eq!(packed_items, Ok(vec![vec!["deck", "deck", "deck", "deck"], vec!["die"]]));
+    assert_eq!(packed_items, Ok(vec![vec![&42, &42, &42, &42], vec![&13]]));
 ```
 
 <!-- # /// [more detailed explanation] -->

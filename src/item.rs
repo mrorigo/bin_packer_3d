@@ -6,12 +6,12 @@ use std::cmp::Ordering::Equal;
 ///
 /// Although it's not enforced, it's highly recommended that each item has a unique ItemId.
 ///
-pub type ItemId = str;
+pub type ItemId = u64;
 
 /// Represents an item that a user will insert into a bin.
 /// ```rust
 ///   use bin_packer_3d::item::Item;
-///   let item = Item::new("deck", [2.0, 8.0, 12.0]);
+///   let item = Item::new(&42, [2, 8, 12]);
 /// ```
 #[derive(Clone, Debug, Copy)]
 pub struct Item<'a> {
@@ -23,7 +23,7 @@ pub struct Item<'a> {
 
 impl<'a> Item<'a> {
     /// Create an item given it's id and dimensions.
-    pub fn new<F: Into<Dimension> + Copy>(id: &'a str, dims: [F; 3]) -> Self {
+    pub fn new<F: Into<Dimension> + Copy>(id: &'a ItemId, dims: [F; 3]) -> Self {
         Self {
             id,
             block: Block::new(dims[0], dims[1], dims[2]),
@@ -45,7 +45,7 @@ impl Ord for Item<'_> {
 
 impl PartialOrd for Item<'_> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 

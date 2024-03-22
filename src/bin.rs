@@ -4,7 +4,7 @@ use crate::item::Item;
 /// Represents an bin that a user can insert items into.
 /// ```rust
 /// use bin_packer_3d::bin::Bin;
-/// let bin = Bin::new([1.0, 2.0, 3.0]);
+/// let bin = Bin::new([1, 2, 3]);
 /// ```
 
 #[derive(Clone, Debug)]
@@ -31,16 +31,16 @@ impl<'a> Bin<'a> {
     ```rust
         use bin_packer_3d::bin::Bin;
         use bin_packer_3d::item::Item;
-        let item = Item::new("item1", [1.0, 2.0, 3.0]);
-        let bin = Bin::new([1.0, 2.0, 3.0]);
+        let item = Item::new(&1, [1, 2, 3]);
+        let bin = Bin::new([1, 2, 3]);
         assert!(bin.fits(&item));
     ```
     An item that does not fit into a bin:
     ```rust
         use bin_packer_3d::bin::Bin;
         use bin_packer_3d::item::Item;
-        let item = Item::new("item2", [4.0, 12.0, 14.0]);
-        let bin = Bin::new([3.0, 12.0, 14.0]);
+        let item = Item::new(&2, [4, 12, 14]);
+        let bin = Bin::new([3, 12, 14]);
         assert!(!bin.fits(&item));
     ```
     **/
@@ -58,10 +58,10 @@ impl<'a> Bin<'a> {
         use bin_packer_3d::bin::Bin;
         use bin_packer_3d::item::{Item, ItemId};
 
-        let item_1 = Item::new("item1", [24.0, 10.0, 2.0]);
-        let item_2 = Item::new("item2", [24.0, 10.0, 2.0]);
-        let item_3 = Item::new("item3", [24.0, 10.0, 2.0]);
-        let mut bin = Bin::new([24.0, 10.0, 4.0]);
+        let item_1 = Item::new(&1, [24, 10, 2]);
+        let item_2 = Item::new(&2, [24, 10, 2]);
+        let item_3 = Item::new(&3, [24, 10, 2]);
+        let mut bin = Bin::new([24, 10, 4]);
         assert!(bin.try_packing(item_1).is_some());
         assert!(bin.try_packing(item_2).is_some());
         assert_eq!(bin.try_packing(item_3), None);
@@ -70,7 +70,7 @@ impl<'a> Bin<'a> {
                 .into_iter()
                 .map(|item| item.id)
                 .collect::<Vec<&ItemId>>(),
-            vec!["item1", "item2"]
+            vec![&1, &2]
         );
     ```
     **/
@@ -102,7 +102,7 @@ impl<'a> Bin<'a> {
     ```rust
         use bin_packer_3d::bin::Bin;
         use bin_packer_3d::item::{Item, ItemId};
-        let bin = Bin::new([24.0, 10.0, 4.0]);
+        let bin = Bin::new([24, 10, 4]);
         let new_bin = bin.clone_as_empty_bin();
     ```
     **/
